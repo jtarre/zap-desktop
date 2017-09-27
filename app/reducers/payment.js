@@ -1,5 +1,6 @@
 import { createSelector } from 'reselect'
 import { ipcRenderer } from 'electron'
+import { setForm, resetForm } from './form'
 
 // ------------------------------------
 // Constants
@@ -10,6 +11,7 @@ export const GET_PAYMENTS = 'GET_PAYMENTS'
 export const RECEIVE_PAYMENTS = 'RECEIVE_PAYMENTS'
 
 export const SEND_PAYMENT = 'SEND_PAYMENT'
+
 export const PAYMENT_SUCCESSFULL = 'PAYMENT_SUCCESSFULL'
 export const PAYMENT_FAILED = 'PAYMENT_FAILED'
 
@@ -64,7 +66,16 @@ export const payInvoice = paymentRequest => (dispatch) => {
 
 // Receive IPC event for successful payment
 // TODO: Add payment to state, not a total re-fetch
-export const paymentSuccessful = () => fetchPayments()
+export const paymentSuccessful = () => (dispatch) => {
+  // Close the form modal once the payment was succesful
+  dispatch(setForm({ modalOpen: false }))
+
+  // Refetch payments (TODO: dont do a full refetch, rather append new tx to list)
+  dispatch(fetchPayments())
+
+  // Reset the payment form
+  dispatch(resetForm())
+}
 
 
 // ------------------------------------
@@ -73,10 +84,10 @@ export const paymentSuccessful = () => fetchPayments()
 const ACTION_HANDLERS = {
   [SET_PAYMENT]: (state, { payment }) => ({ ...state, payment }),
   [GET_PAYMENTS]: state => ({ ...state, paymentLoading: true }),
+  [SEND_PAYMENT]: state => ({ ...state, sendingPayment: true }),
   [RECEIVE_PAYMENTS]: (state, { payments }) => ({ ...state, paymentLoading: false, payments }),
-  [PAYMENT_SUCCESSFULL]: (state, { payment }) => (
-    { ...state, paymentLoading: false, payments: [payment, ...state.payments] }
-  )
+  [PAYMENT_SUCCESSFULL]: state => ({ ...state, sendingPayment: false }),
+  [PAYMENT_FAILED]: state => ({ ...state, sendingPayment: false })
 }
 
 const paymentSelectors = {}
@@ -93,6 +104,7 @@ export { paymentSelectors }
 // Reducer
 // ------------------------------------
 const initialState = {
+  sendingPayment: false,
   paymentLoading: false,
   payments: [],
   payment: null

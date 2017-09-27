@@ -20,8 +20,14 @@ import {
 
 } from './channels'
 import { receivePayments, paymentSuccessful } from './payment'
-import { receiveInvoices, createdInvoice, receiveFormInvoice } from './invoice'
+import { receiveInvoices, createdInvoice, receiveFormInvoice, invoiceUpdate } from './invoice'
 import { receiveBalance } from './balance'
+import {
+  receiveTransactions,
+  transactionSuccessful,
+  transactionError,
+  newTransaction
+} from './transaction'
 
 // Import all receiving IPC event handlers and pass them into createIpc
 const ipc = createIpc({
@@ -36,6 +42,7 @@ const ipc = createIpc({
   receiveInvoices,
   receiveInvoice: receiveFormInvoice,
   createdInvoice,
+  invoiceUpdate,
 
   receiveBalance,
 
@@ -56,7 +63,12 @@ const ipc = createIpc({
   disconnectSuccess,
 
   receiveAddress,
-  receiveCryptocurrency
+  receiveCryptocurrency,
+
+  receiveTransactions,
+  transactionSuccessful,
+  transactionError,
+  newTransaction
 })
 
 export default ipc
